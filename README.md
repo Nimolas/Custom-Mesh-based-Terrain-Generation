@@ -1,5 +1,5 @@
 # Custom-Mesh-based-Terrain-Generation
-A unity project, that generates a terrain from a custom built mesh at runtime
+A unity project, that generates a terrain from a custom built mesh at runtime. The capsule represnts a player object that can move around the terrain, if the continous generation feature is disabled. This works because the Unity NavMesh is built when this feature is disabled.
 
 [Here's a working example](https://puu.sh/ELIOp/04aa1229e1.webm)
 
