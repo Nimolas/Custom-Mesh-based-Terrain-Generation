@@ -13,10 +13,10 @@ public class MeshGenerator : MonoBehaviour
     int xGridSize, zGridSize;
 
     [SerializeField]
-    float minYGen, maxYGen;
+    float minYGen, maxYGen, scaleFactor;
 
     [SerializeField]
-    bool continousGeneration = false, clampValues = true;
+    bool continousGeneration = false;
 
     System.Random rand = new System.Random();
     List<List<Vector3>> vertices = new List<List<Vector3>>();
@@ -100,8 +100,8 @@ public class MeshGenerator : MonoBehaviour
     {
         var average = GetAverageYPoint(x, z);
         var y = average + (float)(rand.NextDouble() * Math.Abs(maxYGen - minYGen)) + minYGen; //range between two input values from editor
-        if (clampValues)
-            y = Mathf.Clamp(y, minYGen, maxYGen);
+        y *= scaleFactor;
+        y = Mathf.Clamp(y, minYGen, maxYGen);
 
         return new Vector3(x, y, z);
     }
@@ -119,6 +119,54 @@ public class MeshGenerator : MonoBehaviour
         }
     }
 
+    float FindClosestValue(float value, float min, float max)
+    {
+        var minDist = Mathf.Abs(min - value);
+        var maxDist = Mathf.Abs(max - value);
+        var result = minDist < maxDist ? min : max;
+        return result;
+    }
+
+    Color FindColourRange(float value, bool max)
+    {
+        var minValue = 0f;
+        var maxValue = 0f;
+        var dist = Mathf.Abs(minYGen - maxYGen);
+
+        minValue = minYGen;
+        maxValue = minYGen + Mathf.Abs(dist * 0.25f);
+        if (value >= minValue && value <= maxValue)
+        {
+            return Color.blue;
+        }
+
+        minValue = minYGen + Mathf.Abs(dist * 0.25f);
+        maxValue = minYGen + Mathf.Abs(dist * 0.5f);
+        if (value >= minValue && value <= maxValue)
+        {
+            return Color.yellow;
+        }
+
+        minValue = minYGen + Mathf.Abs(dist * 0.5f);
+        maxValue = minYGen + Mathf.Abs(dist * 0.75f);
+        if (value >= minValue && value <= maxValue)
+        {
+            return Color.green;
+        }
+
+        minValue = minYGen + Mathf.Abs(dist * 0.75f);
+        maxValue = minYGen + Mathf.Abs(dist * 0.9f);
+        if (value >= minValue && value <= maxValue)
+        {
+            return Color.grey;
+        }
+
+        if (value > maxValue)
+            return Color.white;
+
+        return Color.black;
+    }
+
     void AssignColours()
     {
         colours.Clear();
@@ -126,7 +174,7 @@ public class MeshGenerator : MonoBehaviour
         {
             foreach (var vertex in list)
             {
-                colours.Add(Color.Lerp(Color.blue, Color.green, vertex.y));
+                colours.Add(Color.Lerp(FindColourRange(vertex.y, false), FindColourRange(vertex.y, true), vertex.y));
             }
         }
     }
