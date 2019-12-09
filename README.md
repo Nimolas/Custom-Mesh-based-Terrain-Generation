@@ -5,9 +5,11 @@ A unity project, that generates a terrain from a custom built mesh at runtime. T
 
 And Some Screenshots:
 
-Edit 09/12/2019:
+Edit 09/12/2019 (Perlin Noise Screenshots):
  
 ![Screenshot 1:](https://i.imgur.com/agv2seZ.png)
+
+Previous Algorithm
 
 ![Screenshot 2:](https://i.imgur.com/HYytd8L.png)
 
