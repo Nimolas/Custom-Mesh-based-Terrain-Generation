@@ -13,7 +13,7 @@ public class MeshGenerator : MonoBehaviour
     int xGridSize, zGridSize;
 
     [SerializeField]
-    float minYGen, maxYGen, scaleFactor;
+    float scaleFactor, heightFactor;
 
     [SerializeField]
     bool continousGeneration = false;
@@ -23,6 +23,7 @@ public class MeshGenerator : MonoBehaviour
     List<int> indices = new List<int>();
     List<Color32> colours = new List<Color32>();
     Mesh _mesh;
+    int zCurrentCounter = 0;
 
     // Start is called before the first frame update
     void Start()
@@ -37,71 +38,14 @@ public class MeshGenerator : MonoBehaviour
         else GetComponent<NavMeshSurface>().BuildNavMesh();
     }
 
-    float GetYPointFromPosition(int x, int z)
+    Vector3 CreateVertex(int x, int z, int zScalar)
     {
-        try
-        {
-            return vertices.ElementAt(z).ElementAt(x).y;
-        }
-        catch (Exception e)
-        {
-            return 0f;
-        }
-    }
+        float xCoord = (float)x / xGridSize * scaleFactor;
+        float zCoord = (float)zScalar / zGridSize * scaleFactor;
 
-    float GetAverageYPoint(int x, int z)
-    {
-        var counter = 0;
-        var yAverage = 0f;
-        var temp = 0f;
-
-        temp = GetYPointFromPosition(x - 1, z); //left from point
-        if (temp != 0)
-        {
-            yAverage += temp;
-            counter++;
-        }
-
-        temp = GetYPointFromPosition(x - 1, z - 1); //left and back from point
-        if (temp != 0)
-        {
-            yAverage += temp;
-            counter++;
-        }
-
-        temp = GetYPointFromPosition(x, z - 1); //back from point
-        if (temp != 0)
-        {
-            yAverage += temp;
-            counter++;
-        }
-
-        temp = GetYPointFromPosition(x + 1, z - 1); //right and back from point
-        if (temp != 0)
-        {
-            yAverage += temp;
-            counter++;
-        }
-
-        temp = GetYPointFromPosition(x + 1, z); //right from point
-        if (temp != 0)
-        {
-            yAverage += temp;
-            counter++;
-        }
-
-        if (counter == 0)
-            return 0;
-
-        return yAverage / counter;
-    }
-
-    Vector3 CreateVertex(int x, int z)
-    {
-        var average = GetAverageYPoint(x, z);
-        var y = average + (float)(rand.NextDouble() * Math.Abs(maxYGen - minYGen)) + minYGen; //range between two input values from editor
-        y *= scaleFactor;
-        y = Mathf.Clamp(y, minYGen, maxYGen);
+        var y = Mathf.PerlinNoise(xCoord, zCoord);
+        //    y *= scaleFactor;
+        //y = Mathf.Clamp(y, minYGen * scaleFactor, maxYGen * scaleFactor);
 
         return new Vector3(x, y, z);
     }
@@ -113,55 +57,56 @@ public class MeshGenerator : MonoBehaviour
             var row = new List<Vector3>();
             for (int xCount = 0; xCount <= xGridSize; xCount++)
             {
-                row.Add(CreateVertex(xCount, zCount));
+                row.Add(CreateVertex(xCount, zCount, zCount));
             }
             vertices.Add(row);
+            zCurrentCounter++;
         }
-    }
-
-    float FindClosestValue(float value, float min, float max)
-    {
-        var minDist = Mathf.Abs(min - value);
-        var maxDist = Mathf.Abs(max - value);
-        var result = minDist < maxDist ? min : max;
-        return result;
+        zCurrentCounter--; //minus because you need +1 vertex for the grid size.
     }
 
     Color FindColourRange(float value, bool max)
     {
         var minValue = 0f;
         var maxValue = 0f;
-        var dist = Mathf.Abs(minYGen - maxYGen);
 
-        minValue = minYGen;
-        maxValue = minYGen + Mathf.Abs(dist * 0.25f);
+        minValue = 0;
+        maxValue = .25f;
         if (value >= minValue && value <= maxValue)
         {
-            return Color.blue;
-        }
-
-        minValue = minYGen + Mathf.Abs(dist * 0.25f);
-        maxValue = minYGen + Mathf.Abs(dist * 0.5f);
-        if (value >= minValue && value <= maxValue)
-        {
+            if (!max)
+                return Color.blue;
             return Color.yellow;
         }
 
-        minValue = minYGen + Mathf.Abs(dist * 0.5f);
-        maxValue = minYGen + Mathf.Abs(dist * 0.75f);
+        minValue = .25f;
+        maxValue = .5f;
         if (value >= minValue && value <= maxValue)
         {
+            if (!max)
+                return Color.yellow;
             return Color.green;
         }
 
-        minValue = minYGen + Mathf.Abs(dist * 0.75f);
-        maxValue = minYGen + Mathf.Abs(dist * 0.9f);
+        minValue = .5f;
+        maxValue = .75f;
         if (value >= minValue && value <= maxValue)
         {
+            if (!max)
+                return Color.green;
             return Color.grey;
         }
 
-        if (value > maxValue)
+        minValue = .75f;
+        maxValue = .9f;
+        if (value >= minValue && value <= maxValue)
+        {
+            if (!max)
+                return Color.grey;
+            return Color.white;
+        }
+
+        if (value > .9f)
             return Color.white;
 
         return Color.black;
@@ -187,7 +132,7 @@ public class MeshGenerator : MonoBehaviour
         {
             for (int xCount = 0; xCount < zGridSize; xCount++)
             {
-                indices.Add(vert + 0);
+                indices.Add(vert);
                 indices.Add(vert + xGridSize + 1);
                 indices.Add(vert + 1);
                 indices.Add(indices.Last());
@@ -200,10 +145,21 @@ public class MeshGenerator : MonoBehaviour
         }
     }
 
+    void ApplyHeightMap()
+    {
+        for (int x = 0; x < vertices.Count; x++)
+            for (int z = 0; z < vertices.ElementAt(x).Count; z++)
+            {
+                var temp = vertices[x][z];
+                vertices[x][z] = new Vector3(temp.x, temp.y * heightFactor, temp.z);
+            }
+    }
+
     void CreateShape()
     {
         CreateVertices();
         AssignColours();
+        ApplyHeightMap();
         CreateIndices();
     }
 
@@ -225,10 +181,14 @@ public class MeshGenerator : MonoBehaviour
         var tempList = new List<Vector3>();
         for (int iCount = 0; iCount <= xGridSize; iCount++)
         {
-            tempList.Add(CreateVertex(iCount, zGridSize));
+            tempList.Add(CreateVertex(iCount, zGridSize, zCurrentCounter));
         }
+        zCurrentCounter++;
+
         vertices.Add(tempList);
+
         AssignColours();
+        ApplyHeightMap();
         CreateIndices();
     }
 
@@ -236,8 +196,11 @@ public class MeshGenerator : MonoBehaviour
     {
         while (true)
         {
-            MoveMesh();
-            UpdateMesh();
+            if (continousGeneration)
+            {
+                MoveMesh();
+                UpdateMesh();
+            }
             yield return new WaitForSeconds(0.01f);
         }
     }

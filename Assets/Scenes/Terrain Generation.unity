@@ -207,11 +207,10 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 31ef6109f2fee1a4786af5526f30cc0d, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  xGridSize: 80
-  zGridSize: 80
-  minYGen: -1
-  maxYGen: 1
-  scaleFactor: 1
+  xGridSize: 100
+  zGridSize: 100
+  scaleFactor: 10
+  heightFactor: 10
   continousGeneration: 1
 --- !u!1 &1560844628
 GameObject:
@@ -410,6 +409,18 @@ PrefabInstance:
   m_Modification:
     m_TransformParent: {fileID: 0}
     m_Modifications:
+    - target: {fileID: 0}
+      propertyPath: minYGen
+      value: -0.7
+      objectReference: {fileID: 0}
+    - target: {fileID: 0}
+      propertyPath: maxYGen
+      value: 0.7
+      objectReference: {fileID: 0}
+    - target: {fileID: 0}
+      propertyPath: clampValues
+      value: 0
+      objectReference: {fileID: 0}
     - target: {fileID: 4084554167181739355, guid: 0b4aa512c7f86a24aa2acfe610920678,
         type: 3}
       propertyPath: m_Name
@@ -470,21 +481,5 @@ PrefabInstance:
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
       objectReference: {fileID: 0}
-    - target: {fileID: 3165530740703748819, guid: 0b4aa512c7f86a24aa2acfe610920678,
-        type: 3}
-      propertyPath: minYGen
-      value: -0.7
-      objectReference: {fileID: 0}
-    - target: {fileID: 3165530740703748819, guid: 0b4aa512c7f86a24aa2acfe610920678,
-        type: 3}
-      propertyPath: maxYGen
-      value: 0.7
-      objectReference: {fileID: 0}
-    - target: {fileID: 3165530740703748819, guid: 0b4aa512c7f86a24aa2acfe610920678,
-        type: 3}
-      propertyPath: clampValues
-      value: 0
-      objectReference: {fileID: 0}
-    m_RemovedComponents:
-    - {fileID: 3165530740703748819, guid: 0b4aa512c7f86a24aa2acfe610920678, type: 3}
+    m_RemovedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: 0b4aa512c7f86a24aa2acfe610920678, type: 3}
