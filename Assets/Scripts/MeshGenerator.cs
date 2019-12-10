@@ -7,6 +7,7 @@ using System;
 
 [RequireComponent(typeof(MeshFilter))]
 [RequireComponent(typeof(MeshRenderer))]
+[RequireComponent(typeof(MeshCollider))]
 public class MeshGenerator : MonoBehaviour
 {
     [SerializeField]
@@ -17,6 +18,9 @@ public class MeshGenerator : MonoBehaviour
 
     [SerializeField]
     bool continousGeneration = false;
+
+    [SerializeField]
+    GameObject PlayerPrefab;
 
     System.Random rand = new System.Random();
     List<List<Vector3>> vertices = new List<List<Vector3>>();
@@ -31,11 +35,17 @@ public class MeshGenerator : MonoBehaviour
         _mesh = new Mesh();
         GetComponent<MeshFilter>().mesh = _mesh;
         GetComponent<MeshCollider>().sharedMesh = _mesh;
+        GetComponent<MeshCollider>().sharedMesh = _mesh;
         CreateShape();
         UpdateMesh();
+        GetComponent<MeshCollider>().convex = true;
         if (continousGeneration)
             StartCoroutine(ContinousGeneration());
-        else GetComponent<NavMeshSurface>().BuildNavMesh();
+        else
+        {
+            GetComponent<NavMeshSurface>().BuildNavMesh();
+            Instantiate(PlayerPrefab, new Vector3(xGridSize / 2, 3f, zGridSize / 2), Quaternion.identity, null);
+        }
     }
 
     Vector3 CreateVertex(int x, int z, int zScalar)

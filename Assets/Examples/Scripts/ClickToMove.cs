@@ -11,15 +11,16 @@ public class ClickToMove : MonoBehaviour
     void Start()
     {
         m_Agent = GetComponent<NavMeshAgent>();
+        m_Agent.Warp(transform.position);
     }
 
     void Update()
     {
-        if (Input.GetMouseButtonDown(0) && !Input.GetKey(KeyCode.LeftShift))
+        if (Input.GetMouseButtonDown(0))
         {
             var ray = Camera.main.ScreenPointToRay(Input.mousePosition);
             if (Physics.Raycast(ray.origin, ray.direction, out m_HitInfo))
-                m_Agent.destination = m_HitInfo.point;
+                m_Agent.SetDestination(m_HitInfo.point);
         }
     }
 }
